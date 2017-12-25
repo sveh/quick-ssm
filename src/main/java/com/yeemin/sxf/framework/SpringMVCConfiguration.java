@@ -51,7 +51,7 @@ import java.util.List;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement(proxyTargetClass = true)
-@ComponentScan("com.yeemin.sxf")
+@ComponentScan()
 public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     /**

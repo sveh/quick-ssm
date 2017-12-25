@@ -33,6 +33,7 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -52,6 +53,23 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class DaoConfiguration {
 
+    /**
+     * 数据库地址
+     */
+    @Value("${jdbc.url}")
+    private String url;
+
+    /**
+     * 数据库用户名
+     */
+    @Value("${jdbc.username}")
+    private String username;
+
+    /**
+     * 数据库密码
+     */
+    @Value("${jdbc.url}")
+    private String password;
 
     /**
      * @description 设置数据源
@@ -63,9 +81,9 @@ public class DaoConfiguration {
     @Bean
     public DataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull");
-        dataSource.setUsername("root");
-        dataSource.setPassword("admin");
+        dataSource.setJdbcUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         return dataSource;
     }
