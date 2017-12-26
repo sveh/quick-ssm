@@ -34,6 +34,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -45,6 +46,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.Scanner;
 
 /**
  * description 数据连接层相关配置
@@ -53,7 +55,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableTransactionManagement
-public class DaoConfiguration implements ApplicationContextAware {
+public class DaoConfiguration implements ApplicationContextAware,InitializingBean {
 
     /**
      * 数据库地址
@@ -69,6 +71,22 @@ public class DaoConfiguration implements ApplicationContextAware {
      * 数据库密码
      */
     private String password;
+    /**
+     * 数据库驱动
+     */
+    private String driver;
+    /**
+     * 类型别名包
+     */
+    private String typeAliasesPackage;
+    /**
+     * mapper 扫描
+     */
+    private String mapperScanPackage;
+    /**
+     * mapper xml位置
+     */
+    private String mapperLocations;
 
     private ApplicationContext context;
 
@@ -76,6 +94,10 @@ public class DaoConfiguration implements ApplicationContextAware {
         url = PropertiesLoader.getConfig("jdbc.url");
         username = PropertiesLoader.getConfig("jdbc.username");
         password = PropertiesLoader.getConfig("jdbc.password");
+        driver = PropertiesLoader.getConfig("jdbc.driver");
+        typeAliasesPackage= PropertiesLoader.getConfig("mybatis.typeAliasesPackage");
+        mapperLocations = PropertiesLoader.getConfig("mybatis.mapperLocations");
+        mapperScanPackage = PropertiesLoader.getConfig("mybatis.mapperScanPackage");
     }
 
     /**
@@ -87,14 +109,14 @@ public class DaoConfiguration implements ApplicationContextAware {
      */
     @Bean
     public DataSource dataSource() {
-        if (url == null) {
-            initialize();
-        }
+//        if (url == null) {
+//            initialize();
+//        }
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setDriverClassName(driver);
         return dataSource;
     }
 
@@ -137,14 +159,14 @@ public class DaoConfiguration implements ApplicationContextAware {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(dataSource());
         sqlSessionFactoryBean.setConfiguration(configuration());
-        sqlSessionFactoryBean.setTypeAliasesPackage("com");
+        sqlSessionFactoryBean.setTypeAliasesPackage(typeAliasesPackage);
         try {
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            sqlSessionFactoryBean.setMapperLocations(resolver.getResources("classpath*:mapper/*.xml"));
+            sqlSessionFactoryBean.setMapperLocations(resolver.getResources(mapperLocations));
             return sqlSessionFactoryBean.getObject();
         } catch (Exception e) {
             throw new RuntimeException();
-        }
+         }
     }
 
     /**
@@ -158,7 +180,7 @@ public class DaoConfiguration implements ApplicationContextAware {
     public MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-        mapperScannerConfigurer.setBasePackage("com");
+        mapperScannerConfigurer.setBasePackage(mapperScanPackage);
         // 使用MyBatis自带注解
         mapperScannerConfigurer.setAnnotationClass(Mapper.class);
         return mapperScannerConfigurer;
@@ -209,5 +231,10 @@ public class DaoConfiguration implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.context = applicationContext;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        initialize();
     }
 }

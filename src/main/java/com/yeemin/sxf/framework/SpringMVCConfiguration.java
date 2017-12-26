@@ -28,9 +28,14 @@ import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -41,6 +46,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.UrlBasedViewResolver;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 /**
@@ -51,7 +57,8 @@ import java.util.List;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement(proxyTargetClass = true)
-@ComponentScan()
+//@ComponentScan(includeFilters ={@ComponentScan.Filter(type = FilterType.ANNOTATION,value = {Controller.class, Service.class, Repository.class, Component.class})})
+@ComponentScan("com.yeemin.demo")
 public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     /**
