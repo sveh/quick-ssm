@@ -33,7 +33,9 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -51,25 +53,30 @@ import javax.sql.DataSource;
  */
 @Configuration
 @EnableTransactionManagement
-public class DaoConfiguration {
+public class DaoConfiguration implements ApplicationContextAware {
 
     /**
      * 数据库地址
      */
-    @Value("${jdbc.url}")
     private String url;
 
     /**
      * 数据库用户名
      */
-    @Value("${jdbc.username}")
     private String username;
 
     /**
      * 数据库密码
      */
-    @Value("${jdbc.url}")
     private String password;
+
+    private ApplicationContext context;
+
+    public void initialize() {
+        url = PropertiesLoader.getConfig("jdbc.url");
+        username = PropertiesLoader.getConfig("jdbc.username");
+        password = PropertiesLoader.getConfig("jdbc.password");
+    }
 
     /**
      * @description 设置数据源
@@ -80,6 +87,9 @@ public class DaoConfiguration {
      */
     @Bean
     public DataSource dataSource() {
+        if (url == null) {
+            initialize();
+        }
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(url);
         dataSource.setUsername(username);
@@ -127,7 +137,7 @@ public class DaoConfiguration {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setDataSource(dataSource());
         sqlSessionFactoryBean.setConfiguration(configuration());
-        sqlSessionFactoryBean.setTypeAliasesPackage("com.yeemin.ssm.noxml.entity");
+        sqlSessionFactoryBean.setTypeAliasesPackage("com");
         try {
             ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             sqlSessionFactoryBean.setMapperLocations(resolver.getResources("classpath*:mapper/*.xml"));
@@ -148,7 +158,7 @@ public class DaoConfiguration {
     public MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-        mapperScannerConfigurer.setBasePackage("com.yeemin.ssm.noxml");
+        mapperScannerConfigurer.setBasePackage("com");
         // 使用MyBatis自带注解
         mapperScannerConfigurer.setAnnotationClass(Mapper.class);
         return mapperScannerConfigurer;
@@ -196,4 +206,8 @@ public class DaoConfiguration {
         return configuration;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
+    }
 }
